@@ -2,7 +2,7 @@
     <string name="app_name">PagingWithNetwork</string>
     <string name="retry">Retry</string>
     <string name="post_subtitle">Submitted by %s</string>
-    <string name="search_hint">Subreddit Name</string>
+    <string name="search_hint">Subreddit</string>
     <string name="default_subreddit">dog</string>
     <string name="db_plus_network">db + network</string>
     <string name="network_only_by_item">network only (by item)</string>
