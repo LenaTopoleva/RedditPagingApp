@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.lenatopoleva.redditpagingapp.R
-import com.lenatopoleva.redditpagingapp.model.data.RedditPost
+import com.lenatopoleva.redditpagingapp.model.db.entity.RedditPost
 import com.lenatopoleva.redditpagingapp.model.imageloader.IImageLoader
 
 class RedditPostViewHolder(view: View, private val glide: IImageLoader<ImageView>)

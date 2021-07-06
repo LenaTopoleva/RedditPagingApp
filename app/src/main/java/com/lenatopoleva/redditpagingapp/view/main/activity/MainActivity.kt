@@ -3,27 +3,35 @@ package com.lenatopoleva.redditpagingapp.view.main.activity
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
 import com.lenatopoleva.redditpagingapp.databinding.ActivityMainBinding
-import com.lenatopoleva.redditpagingapp.view.main.MainViewModel
+import com.lenatopoleva.redditpagingapp.viewmodel.MainViewModel
 import com.lenatopoleva.redditpagingapp.view.main.adapter.PostsAdapter
 import androidx.activity.viewModels
 import androidx.paging.LoadState
-import com.lenatopoleva.redditpagingapp.view.imageloader.GlideImageLoader
+import com.lenatopoleva.redditpagingapp.App
+import com.lenatopoleva.redditpagingapp.model.imageloader.IImageLoader
 import com.lenatopoleva.redditpagingapp.view.main.adapter.PostsLoadStateAdapter
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
+import javax.inject.Inject
 
 
 class MainActivity: AppCompatActivity() {
 
-    val glide = GlideImageLoader()
+    @Inject
+    lateinit var glide: IImageLoader<ImageView>
+
     private lateinit var adapter: PostsAdapter
 
+    init {
+        App.instance.appComponent.inject(this)
+    }
 
     private val model: MainViewModel by viewModels {
         object : AbstractSavedStateViewModelFactory(this, null) {

@@ -1,15 +1,10 @@
 package com.lenatopoleva.redditpagingapp.view.main.adapter
 
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
-import com.lenatopoleva.redditpagingapp.databinding.ActivityMainRecyclerviewItemBinding
-import com.lenatopoleva.redditpagingapp.model.data.Child
-import com.lenatopoleva.redditpagingapp.model.data.RedditPost
-import com.lenatopoleva.redditpagingapp.model.data.RedditResponse
+import com.lenatopoleva.redditpagingapp.model.db.entity.RedditPost
 import com.lenatopoleva.redditpagingapp.model.imageloader.IImageLoader
 
 

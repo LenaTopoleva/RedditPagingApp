@@ -1,17 +1,22 @@
 package com.lenatopoleva.redditpagingapp.model.repository
 
-import androidx.paging.PagingData
-import com.lenatopoleva.redditpagingapp.model.data.RedditPost
-import com.lenatopoleva.redditpagingapp.model.data.RedditResponse
-import com.lenatopoleva.redditpagingapp.model.datasource.DataSource
-import kotlinx.coroutines.flow.Flow
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import com.lenatopoleva.redditpagingapp.model.datasource.ApiService
+import com.lenatopoleva.redditpagingapp.model.datasource.PagingRemoteMediator
+import com.lenatopoleva.redditpagingapp.model.db.RedditDb
 
 
-class RepositoryImplementation(private val dataSource: DataSource<RedditResponse>) :
-    Repository<RedditResponse> {
+class RepositoryImplementation(val db: RedditDb, val remoteProvider: ApiService) :
+    IRepository {
 
-    override fun getHotList(subReddit: String, pageSize: Int): Flow<PagingData<RedditPost>> {
-        return dataSource.getHotList(subReddit, pageSize)
-    }
+    @ExperimentalPagingApi
+    override fun getHotList(subReddit: String, pageSize: Int) = Pager(
+            config = PagingConfig(pageSize),
+            remoteMediator = PagingRemoteMediator(db, remoteProvider, subReddit)
+    ) {
+        db.posts().postsBySubreddit(subReddit)
+    }.flow
 
 }
