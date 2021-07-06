@@ -4,13 +4,13 @@ import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 
 
-data class DataModel (
+data class RedditResponse (
     @field:SerializedName("kind") val kind: String,
     @field:SerializedName("data") val data: Data
 )
 
 data class Data (
-    val after: String,
+    val after: String?,
     val dist: Long,
     val modhash: String,
 
@@ -18,15 +18,15 @@ data class Data (
     val geoFilter: Any? = null,
 
     @field:SerializedName("children") val children: List<Child>,
-    val before: Any? = null
+    val before: String? = null
 )
 
 data class Child (
     val kind: Kind,
-    @field:SerializedName("data") val data: ChildData
+    @field:SerializedName("data") val data: RedditPost
 )
 
-data class ChildData (
+data class RedditPost (
     @field:SerializedName("approved_at_utc")
     val approvedAtUTC: Any? = null,
 
@@ -134,7 +134,7 @@ data class ChildData (
     val authorPremium: Boolean,
 
     val thumbnail: String,
-    val edited: Boolean,
+    val edited: Any,
 
     @field:SerializedName("author_flair_css_class")
     val authorFlairCSSClass: String? = null,

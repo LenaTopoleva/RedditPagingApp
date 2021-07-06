@@ -1,83 +1,121 @@
 package com.lenatopoleva.redditpagingapp.view.main.activity
 
 import android.os.Bundle
-import android.widget.Toast
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.lenatopoleva.redditpagingapp.R
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.*
 import com.lenatopoleva.redditpagingapp.databinding.ActivityMainBinding
-import com.lenatopoleva.redditpagingapp.model.data.AppState
-import com.lenatopoleva.redditpagingapp.model.data.ChildData
-import com.lenatopoleva.redditpagingapp.model.data.DataModel
-import com.lenatopoleva.redditpagingapp.view.base.BaseActivity
-import com.lenatopoleva.redditpagingapp.view.main.MainInteractor
 import com.lenatopoleva.redditpagingapp.view.main.MainViewModel
-import com.lenatopoleva.redditpagingapp.view.main.adapter.MainAdapter
+import com.lenatopoleva.redditpagingapp.view.main.adapter.PostsAdapter
+import androidx.activity.viewModels
+import androidx.paging.LoadState
+import com.lenatopoleva.redditpagingapp.view.imageloader.GlideImageLoader
+import com.lenatopoleva.redditpagingapp.view.main.adapter.PostsLoadStateAdapter
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filter
 
-class MainActivity : BaseActivity<AppState, MainInteractor>() {
 
-    override val model: MainViewModel by lazy {
-        ViewModelProvider.NewInstanceFactory().create(MainViewModel::class.java)
-    }
-    private val observer = Observer<AppState> { renderData(it) }
-    private val onListItemClickListener: MainAdapter.OnListItemClickListener =
-        object : MainAdapter.OnListItemClickListener {
-            override fun onItemClick(data: ChildData) {
-                Toast.makeText(this@MainActivity, data.title, Toast.LENGTH_SHORT).show()
+class MainActivity: AppCompatActivity() {
+
+    val glide = GlideImageLoader()
+    private lateinit var adapter: PostsAdapter
+
+
+    private val model: MainViewModel by viewModels {
+        object : AbstractSavedStateViewModelFactory(this, null) {
+            override fun <T : ViewModel?> create(
+                key: String,
+                modelClass: Class<T>,
+                handle: SavedStateHandle
+            ): T {
+                @Suppress("UNCHECKED_CAST")
+                return MainViewModel(handle) as T
             }
         }
+    }
 
     private lateinit var binding: ActivityMainBinding
 
+    @InternalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         println("MainActivity onCreate")
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        initViews()
-    }
 
-    private fun initViews() {
-        println("MainActivity initViews")
-        model.getHotList(true).observe(this, observer)
-        binding.reloadButton.setOnClickListener {
-            model.getHotList(true).observe(this, observer)
+        initAdapter()
+        initSwipeToRefresh()
+        initSearch()    }
+
+    @InternalCoroutinesApi
+    private fun initAdapter() {
+        adapter = PostsAdapter(glide)
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostsLoadStateAdapter(adapter),
+            footer = PostsLoadStateAdapter(adapter)
+        )
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                binding.swipeRefresh.isRefreshing = loadStates.mediator?.refresh is LoadState.Loading
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            model.posts.collectLatest {
+                adapter.submitData(it)
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow
+                // Use a state-machine to track LoadStates such that we only transition to
+                // NotLoading from a RemoteMediator load if it was also presented to UI.
+//                .asMergedLoadStates() ////////MEDIATOR
+                // Only emit when REFRESH changes, as we only want to react on loads replacing the
+                // list.
+                .distinctUntilChangedBy { it.refresh }
+                // Only react to cases where REFRESH completes i.e., NotLoading.
+                .filter { it.refresh is LoadState.NotLoading }
+                // Scroll to top is synchronous with UI updates, even if remote load was triggered.
+                .collect { binding.list.scrollToPosition(0) }
         }
     }
 
-    override fun renderData(appState: AppState) {
-        val screenViewer: IScreenViewer = when (appState) {
-            is AppState.Success -> {
-                println("AppState.Success")
-                val data = appState.data
-                if (data == null) {
-                    ScreenErrorViewer(
-                        binding,
-                        getString(R.string.empty_server_response_on_success)
-                    )
-                } else {
-                    ScreenSuccessViewer(
-                        binding,
-                        onListItemClickListener,
-                        data
-                    )
-                }
-            }
-            is AppState.Loading -> {
-                println("AppState.Loading")
-                ScreenLoadingViewer(
-                    binding
-                )
-            }
-            is AppState.Error -> {
-                println("AppState.Error")
-                ScreenErrorViewer(
-                    binding,
-                    appState.error.message ?: getString(R.string.undefined_error)
-                )
+    private fun initSwipeToRefresh() {
+        binding.swipeRefresh.setOnRefreshListener { adapter.refresh() }
+    }
+
+    private fun initSearch() {
+        binding.input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                updatedSubredditFromInput()
+                true
+            } else {
+                false
             }
         }
-        screenViewer.showScreen()
+        binding.input.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                updatedSubredditFromInput()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun updatedSubredditFromInput() {
+        binding.input.text.trim().toString().let {
+            if (it.isNotBlank() && model.shouldShowSubreddit(it)) {
+                model.showSubreddit(it)
+            }
+        }
     }
 }
+
 

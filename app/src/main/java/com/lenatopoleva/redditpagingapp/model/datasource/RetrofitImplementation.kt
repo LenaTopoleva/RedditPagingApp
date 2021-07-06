@@ -1,8 +1,7 @@
 package com.lenatopoleva.redditpagingapp.model.datasource
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import com.lenatopoleva.redditpagingapp.model.data.DataModel
-import io.reactivex.Observable
+import com.lenatopoleva.redditpagingapp.model.data.RedditResponse
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,10 +9,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class RetrofitImplementation : DataSource<DataModel> {
+class RetrofitImplementation {
 
-    override fun getHotList(): Observable<DataModel> {
-        return getService(BaseInterceptor.interceptor).getHotList()
+    suspend fun getHotList(
+        subreddit: String,
+        limit: Int,
+        after: String?,
+        before: String?
+        ): RedditResponse {
+        return getService(BaseInterceptor.interceptor).getHotList(subreddit, limit, after, before)
     }
 
     private fun getService(interceptor: Interceptor): ApiService {

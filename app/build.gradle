@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -40,17 +41,21 @@ dependencies {
     //AndroidX
     implementation 'androidx.appcompat:appcompat:1.3.0'
 
+    //Lifecycle
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+    implementation"androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
+
+   // to use by viewModels()
+    implementation 'androidx.activity:activity-ktx:1.2.3'
+
     //Design
     //You should not use the com.android.support and com.google.android.material dependencies in your app at the same time
     implementation 'com.google.android.material:material:1.3.0'
+    implementation'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
     //Kotlin
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.31"
-
-    //Rx-Java
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.14'
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.5.0"
 
     //Retrofit 2
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -61,7 +66,11 @@ dependencies {
     //Paging
     implementation'androidx.paging:paging-runtime:3.0.0'
     // optional - RxJava2 support
-    implementation'androidx.paging:paging-rxjava2:3.0.0'
+//    implementation'androidx.paging:paging-rxjava2:3.0.0'
+
+    //Images
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    kapt "com.github.bumptech.glide:compiler:4.11.0"
 
     //Test
     testImplementation 'junit:junit:4.13.2'

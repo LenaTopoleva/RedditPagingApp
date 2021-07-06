@@ -1,21 +1,25 @@
 package com.lenatopoleva.redditpagingapp.view.main
 
-import com.lenatopoleva.redditpagingapp.model.data.AppState
-import com.lenatopoleva.redditpagingapp.model.data.DataModel
+import androidx.paging.PagingData
+import com.lenatopoleva.redditpagingapp.model.data.RedditPost
+import com.lenatopoleva.redditpagingapp.model.data.RedditResponse
 import com.lenatopoleva.redditpagingapp.model.repository.Repository
 import com.lenatopoleva.redditpagingapp.viewmodel.Interactor
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 class MainInteractor(
-    private val remoteRepository: Repository<DataModel>,
-    private val localRepository: Repository<DataModel>
-) : Interactor<AppState> {
+    private val remoteRepository: Repository<RedditResponse>,
+    private val localRepository: Repository<RedditResponse>,
+) : Interactor<Flow<PagingData<RedditPost>>> {
 
-    override fun getHotList(fromRemoteSource: Boolean): Observable<AppState> {
+    override fun getHotList(fromRemoteSource: Boolean, subReddit: String,
+                            pageSize: Int):
+            Flow<PagingData<RedditPost>> {
         return if (fromRemoteSource) {
-            remoteRepository.getHotList().map { AppState.Success(it) }
+            remoteRepository.getHotList(subReddit, pageSize)
         } else {
-            localRepository.getHotList().map { AppState.Success(it) }
+           localRepository.getHotList(subReddit, pageSize)
         }
     }
+
 }
