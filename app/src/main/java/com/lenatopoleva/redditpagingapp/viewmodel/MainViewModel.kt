@@ -17,20 +17,16 @@ class MainViewModel(
        private val savedStateHandle: SavedStateHandle,
        ): ViewModel() {
 
+    private val subredditLiveData = MutableLiveData<String>().apply { value = DEFAULT_SUBREDDIT }
+
     @Inject
     lateinit var repository: IRepository
 
     companion object {
-        const val KEY_SUBREDDIT = "subreddit"
         const val DEFAULT_SUBREDDIT = "dog"
     }
 
-    init {
-        App.instance.appComponent.inject(this)
-        if (!savedStateHandle.contains(KEY_SUBREDDIT)) {
-            savedStateHandle.set(KEY_SUBREDDIT, DEFAULT_SUBREDDIT)
-        }
-    }
+    init { App.instance.appComponent.inject(this) }
 
     private val clearListCh = Channel<Unit>(Channel.CONFLATED)
 
@@ -38,7 +34,7 @@ class MainViewModel(
     @ExperimentalCoroutinesApi
     val posts = flowOf(
         clearListCh.receiveAsFlow().map { PagingData.empty<RedditPost>() },
-        savedStateHandle.getLiveData<String>(KEY_SUBREDDIT)
+            subredditLiveData
             .asFlow()
             .flatMapLatest { repository.getHotList(it, 10) }
             // cachedIn() shares the paging state across multiple consumers of posts,
@@ -48,14 +44,14 @@ class MainViewModel(
 
     fun shouldShowSubreddit(
         subreddit: String
-    ) = savedStateHandle.get<String>(KEY_SUBREDDIT) != subreddit
+    ) = subredditLiveData.value != subreddit
 
     fun showSubreddit(subreddit: String) {
         if (!shouldShowSubreddit(subreddit)) return
 
         clearListCh.offer(Unit)
 
-        savedStateHandle.set(KEY_SUBREDDIT, subreddit)
+        subredditLiveData.postValue(subreddit)
     }
 
 }

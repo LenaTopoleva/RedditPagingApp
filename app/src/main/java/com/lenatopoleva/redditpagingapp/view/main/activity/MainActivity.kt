@@ -29,26 +29,11 @@ class MainActivity: AppCompatActivity() {
     @Inject
     lateinit var glide: IImageLoader<ImageView>
 
+    private val model: MainViewModel by viewModels<MainViewModel>()
     private lateinit var adapter: PostsAdapter
-
-    init {
-        App.instance.appComponent.inject(this)
-    }
-
-    private val model: MainViewModel by viewModels {
-        object : AbstractSavedStateViewModelFactory(this, null) {
-            override fun <T : ViewModel?> create(
-                key: String,
-                modelClass: Class<T>,
-                handle: SavedStateHandle
-            ): T {
-                @Suppress("UNCHECKED_CAST")
-                return MainViewModel(handle) as T
-            }
-        }
-    }
-
     private lateinit var binding: ActivityMainBinding
+
+    init { App.instance.appComponent.inject(this) }
 
     @InternalCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
