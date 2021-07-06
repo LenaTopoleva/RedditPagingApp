@@ -13,7 +13,9 @@ import androidx.activity.viewModels
 import androidx.paging.LoadState
 import com.lenatopoleva.redditpagingapp.App
 import com.lenatopoleva.redditpagingapp.model.imageloader.IImageLoader
+import com.lenatopoleva.redditpagingapp.utils.paging.asMergedLoadStates
 import com.lenatopoleva.redditpagingapp.view.main.adapter.PostsLoadStateAdapter
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
@@ -59,6 +61,7 @@ class MainActivity: AppCompatActivity() {
         initSwipeToRefresh()
         initSearch()    }
 
+    @FlowPreview
     @InternalCoroutinesApi
     private fun initAdapter() {
         adapter = PostsAdapter(glide)
@@ -83,7 +86,7 @@ class MainActivity: AppCompatActivity() {
             adapter.loadStateFlow
                 // Use a state-machine to track LoadStates such that we only transition to
                 // NotLoading from a RemoteMediator load if it was also presented to UI.
-//                .asMergedLoadStates() ////////MEDIATOR
+                .asMergedLoadStates()
                 // Only emit when REFRESH changes, as we only want to react on loads replacing the
                 // list.
                 .distinctUntilChangedBy { it.refresh }
